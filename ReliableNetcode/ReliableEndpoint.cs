@@ -25,7 +25,12 @@ namespace ReliableNetcode
 		/// <summary>
 		/// Message is not guaranteed delivery, but will be in order
 		/// </summary>
-		UnreliableOrdered = 2
+		UnreliableOrdered = 2,
+
+        /// <summary>
+        /// Message is not guaranteed delivery, but allowed to be larger than MTU
+        /// </summary>
+        UnreliableBig = 3,
 	}
 
 	/// <summary>

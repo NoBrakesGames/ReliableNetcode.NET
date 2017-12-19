@@ -43,7 +43,11 @@
   <ItemGroup>
     <Compile Include="MessageChannel.cs" />
     <Compile Include="ReliableEndpoint.cs" />
+    <Compile Include="ReliableMessageChannel.cs" />
     <Compile Include="ReliablePacketController.cs" />
+    <Compile Include="UnreliableBigMessageChannel.cs" />
+    <Compile Include="UnreliableMessageChannel.cs" />
+    <Compile Include="UnreliableOrderedMessageChannel.cs" />
     <Compile Include="Utils\BufferPool.cs" />
     <Compile Include="Utils\ByteBuffer.cs" />
     <Compile Include="Utils\Defines.cs" />
@@ -58,7 +62,8 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent></PostBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
