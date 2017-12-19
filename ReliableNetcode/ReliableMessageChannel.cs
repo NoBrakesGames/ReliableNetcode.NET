@@ -111,7 +111,7 @@ namespace ReliableNetcode {
 
                 if (sendBufferSize < sendBuffer.Size) {
                     var message = messageQueue.Dequeue();
-                    SendMessage(message.InternalBuffer, message.Length);
+                    SendMessage(message.InternalBuffer, 0, message.Length);
                     ObjPool<ByteBuffer>.Return(message);
                 }
             }
@@ -169,7 +169,7 @@ namespace ReliableNetcode {
             this.packetController.ReceivePacket(buffer, bufferLength);
         }
 
-        public override void SendMessage(byte[] buffer, int bufferLength) {
+        public override void SendMessage(byte[] buffer, int bufferPosition, int bufferLength) {
             int sendBufferSize = 0;
             for (ushort seq = oldestUnacked; PacketIO.SequenceLessThan(seq, this.sequence); seq++) {
                 if (sendBuffer.Exists(seq))
@@ -179,7 +179,7 @@ namespace ReliableNetcode {
             if (sendBufferSize == sendBuffer.Size) {
                 ByteBuffer tempBuff = ObjPool<ByteBuffer>.Get();
                 tempBuff.SetSize(bufferLength);
-                tempBuff.BufferCopy(buffer, 0, 0, bufferLength);
+                tempBuff.BufferCopy(buffer, bufferPosition, 0, bufferLength);
                 messageQueue.Enqueue(tempBuff);
 
                 return;
@@ -303,7 +303,7 @@ namespace ReliableNetcode {
 
         protected void flushMessagePacker(bool bufferAck = true) {
             if (messagePacker.Length > 0) {
-                ushort outgoingSeq = packetController.SendPacket(messagePacker.InternalBuffer, messagePacker.Length, (byte)ChannelID);
+                ushort outgoingSeq = packetController.SendPacket(messagePacker.InternalBuffer, 0, messagePacker.Length, (byte)ChannelID);
                 var outgoingPacket = ackBuffer.Insert(outgoingSeq);
 
                 // store message IDs so we can map packet-level acks to message ID acks

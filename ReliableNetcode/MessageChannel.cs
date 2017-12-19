@@ -17,6 +17,6 @@ namespace ReliableNetcode
         public abstract void Reset();
         public abstract void Update(double newTime);
         public abstract void ReceivePacket(byte[] buffer, int bufferLength);
-        public abstract void SendMessage(byte[] buffer, int bufferLength);
+        public abstract void SendMessage(byte[] buffer, int bufferPosition, int bufferLength);
     }
 }

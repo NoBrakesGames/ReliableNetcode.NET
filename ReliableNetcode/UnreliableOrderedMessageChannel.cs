@@ -43,8 +43,8 @@ namespace ReliableNetcode {
             packetController.ReceivePacket(buffer, bufferLength);
         }
 
-        public override void SendMessage(byte[] buffer, int bufferLength) {
-            packetController.SendPacket(buffer, bufferLength, (byte)ChannelID);
+        public override void SendMessage(byte[] buffer, int bufferPosition, int bufferLength) {
+            packetController.SendPacket(buffer, bufferPosition, bufferLength, (byte)ChannelID);
         }
 
         protected void processPacket(ushort sequence, byte[] buffer, int length) {

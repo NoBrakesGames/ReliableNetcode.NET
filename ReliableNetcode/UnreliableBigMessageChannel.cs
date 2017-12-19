@@ -46,14 +46,14 @@ namespace ReliableNetcode {
             packetController.Reset();
         }
 
-        public override void SendMessage(byte[] buffer, int bufferLength) {
+        public override void SendMessage(byte[] buffer, int bufferPosition, int bufferLength) {
             int lastFragmentIndex = bufferLength / mtu;
             for (int fragmentIndex = 0; fragmentIndex * mtu < bufferLength; ++fragmentIndex) {
                 var fragmentBuffer = BufferPool.GetBuffer(2048);
+                fragmentBuffer[0] = (byte)((fragmentIndex << 4) | lastFragmentIndex);
                 int fragmentLength = Math.Min(mtu, bufferLength - fragmentIndex * mtu);
                 Array.Copy(buffer, fragmentIndex * mtu, fragmentBuffer, 1, fragmentLength);
-                fragmentBuffer[0] = (byte)((fragmentIndex << 4) | lastFragmentIndex);
-                packetController.SendPacket(fragmentBuffer, fragmentLength + 1, (byte)ChannelID);
+                packetController.SendPacket(fragmentBuffer, 0, fragmentLength + 1, (byte)ChannelID);
                 BufferPool.ReturnBuffer(fragmentBuffer);
             }
         }

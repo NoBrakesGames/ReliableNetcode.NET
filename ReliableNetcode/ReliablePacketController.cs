@@ -248,7 +248,7 @@ namespace ReliableNetcode
             BufferPool.ReturnBuffer(transmitData);
         }
 
-        public ushort SendPacket(byte[] packetData, int length, byte channelID)
+        public ushort SendPacket(byte[] packetData, int position, int length, byte channelID)
         {
             if (length > config.MaxPacketSize)
                 throw new ArgumentOutOfRangeException("Packet is too large to send, max packet size is " + config.MaxPacketSize + " bytes");
@@ -272,7 +272,7 @@ namespace ReliableNetcode
                 int headerBytes = PacketIO.WritePacketHeader(transmitData, channelID, sequence, ack, ackBits);
                 int transmitBufferLength = length + headerBytes;
 
-                Buffer.BlockCopy(packetData, 0, transmitData, headerBytes, length);
+                Buffer.BlockCopy(packetData, position, transmitData, headerBytes, length);
 
                 config.TransmitPacketCallback(transmitData, transmitBufferLength);
 
@@ -318,7 +318,7 @@ namespace ReliableNetcode
                             bytesToCopy = length - qpos;
 
                         for (int i = 0; i < bytesToCopy; i++)
-                            writer.Write(packetData[qpos++]);
+                            writer.Write(packetData[position + qpos++]);
 
                         int fragmentPacketBytes = (int)writer.WritePosition;
                         config.TransmitPacketCallback(fragmentPacketData, fragmentPacketBytes);

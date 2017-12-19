@@ -38,7 +38,7 @@ namespace UnitTestProject1
 				byte[] test = new byte[256];
 				test[0] = 0;
 				test[1] = (byte)i;
-				endpoint1.SendMessage(test, 256, QosType.Reliable);
+				endpoint1.SendMessage(test, 0, 256, QosType.Reliable);
 			}
 
 			int iterations = 0;
@@ -99,7 +99,7 @@ namespace UnitTestProject1
 				byte[] test = new byte[256];
 				test[0] = 0;
 				test[1] = (byte)i;
-				endpoint1.SendMessage(test, 256, QosType.Reliable);
+				endpoint1.SendMessage(test, 0, 256, QosType.Reliable);
 
 				endpoint1.UpdateFastForward(0.1);
 			}
@@ -169,7 +169,7 @@ namespace UnitTestProject1
 					byte[] test = new byte[256];
 					test[0] = 0;
 					test[1] = (byte)i;
-					endpoint1.SendMessage(test, 256, QosType.Reliable);
+					endpoint1.SendMessage(test, 0, 256, QosType.Reliable);
 
 					endpoint1.UpdateFastForward(0.1);
 				}
@@ -233,7 +233,7 @@ namespace UnitTestProject1
 				byte[] test = new byte[256];
 				test[0] = 0;
 				test[1] = (byte)i;
-				endpoint1.SendMessage(test, 256, QosType.Unreliable);
+				endpoint1.SendMessage(test, 0, 256, QosType.Unreliable);
 			}
 
 			if (receivedPackets.Count == sentPackets.Count)
@@ -285,7 +285,7 @@ namespace UnitTestProject1
 				byte[] test = new byte[256];
 				test[0] = 0;
 				test[1] = (byte)i;
-				endpoint1.SendMessage(test, 256, QosType.UnreliableOrdered);
+				endpoint1.SendMessage(test, 0, 256, QosType.UnreliableOrdered);
 			}
 
 			if (receivedPackets.Count == sentPackets.Count)
@@ -353,7 +353,7 @@ namespace UnitTestProject1
 					byte[] test = new byte[256];
 					test[0] = 0;
 					test[1] = (byte)i;
-					endpoint1.SendMessage(test, 256, QosType.UnreliableOrdered);
+					endpoint1.SendMessage(test, 0, 256, QosType.UnreliableOrdered);
 				}
 
 				// now dequeue all packets
