@@ -26,11 +26,6 @@ namespace ReliableNetcode
 		/// Message is not guaranteed delivery, but will be in order
 		/// </summary>
 		UnreliableOrdered = 2,
-
-        /// <summary>
-        /// Message is not guaranteed delivery, but allowed to be larger than MTU
-        /// </summary>
-        UnreliableBig = 3,
 	}
 
 	/// <summary>
@@ -90,7 +85,6 @@ namespace ReliableNetcode
 				_reliableChannel,
 				new UnreliableMessageChannel() { TransmitCallback = this.transmitMessage, ReceiveCallback = this.receiveMessage },
 				new UnreliableOrderedMessageChannel() { TransmitCallback = this.transmitMessage, ReceiveCallback = this.receiveMessage },
-                new UnreliableBigMessageChannel() { TransmitCallback = this.transmitMessage, ReceiveCallback = this.receiveMessage }
 			};
 		}
 

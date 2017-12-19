@@ -113,10 +113,14 @@ namespace ReliableNetcode.Utils
 			{
 				byte prefixByte = reader.ReadByte();
 
-				if (prefixByte != 1)
+				if ((prefixByte & 1) != 1)
 					throw new FormatException("Packet header indicates non-fragment packet");
 
 				channelID = reader.ReadByte();
+                if (channelID != prefixByte >> 6) {
+                    throw new FormatException("channelID does not match");
+                }
+                
 				sequence = reader.ReadUInt16();
 
 				fragmentID = reader.ReadByte();

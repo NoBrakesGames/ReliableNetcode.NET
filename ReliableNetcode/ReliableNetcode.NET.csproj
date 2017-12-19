@@ -45,7 +45,6 @@
     <Compile Include="ReliableEndpoint.cs" />
     <Compile Include="ReliableMessageChannel.cs" />
     <Compile Include="ReliablePacketController.cs" />
-    <Compile Include="UnreliableBigMessageChannel.cs" />
     <Compile Include="UnreliableMessageChannel.cs" />
     <Compile Include="UnreliableOrderedMessageChannel.cs" />
     <Compile Include="Utils\BufferPool.cs" />

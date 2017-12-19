@@ -197,8 +197,8 @@ namespace ReliableNetcode.Utils
 
         public override void Write(byte[] buffer, int offset, int count)
         {
-            for (int i = 0; i < count; i++)
-                WriteByte(buffer[i + offset]);
+            Array.Copy(buffer, offset, srcByteArray, Position, count);
+            Position += count;
         }
 
         public override void WriteByte(byte value)

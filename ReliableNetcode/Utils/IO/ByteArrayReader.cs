@@ -115,10 +115,9 @@ namespace ReliableNetcode.Utils
 			}
 		}
 
-		public void WriteBuffer(byte[] buffer, int length)
+		public void WriteBuffer(byte[] buffer, int position, int length)
 		{
-			for (int i = 0; i < length; i++)
-				Write(buffer[i]);
+            writeStream.Write(buffer, position, length);
 		}
 
 		public byte ReadByte() { return readStream.ReadByte(); }

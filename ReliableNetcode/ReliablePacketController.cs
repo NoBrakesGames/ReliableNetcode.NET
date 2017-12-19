@@ -310,7 +310,7 @@ namespace ReliableNetcode
                         writer.Write((byte)(numFragments - 1));
 
                         if (fragmentID == 0) {
-                            writer.WriteBuffer(packetHeader, packetHeaderBytes);
+                            writer.WriteBuffer(packetHeader, 0, packetHeaderBytes);
                         }
 
                         int bytesToCopy = config.FragmentSize;

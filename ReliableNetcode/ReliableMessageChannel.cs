@@ -198,7 +198,7 @@ namespace ReliableNetcode {
                 writer.Write(sequence);
 
                 writeVariableLengthUShort((ushort)bufferLength, writer);
-                writer.WriteBuffer(buffer, bufferLength);
+                writer.WriteBuffer(buffer, bufferPosition, bufferLength);
             }
 
             // signal that packet is ready to be sent
