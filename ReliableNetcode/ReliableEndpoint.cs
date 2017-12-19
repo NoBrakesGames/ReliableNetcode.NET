@@ -90,6 +90,7 @@ namespace ReliableNetcode
 				_reliableChannel,
 				new UnreliableMessageChannel() { TransmitCallback = this.transmitMessage, ReceiveCallback = this.receiveMessage },
 				new UnreliableOrderedMessageChannel() { TransmitCallback = this.transmitMessage, ReceiveCallback = this.receiveMessage },
+                new UnreliableBigMessageChannel() { TransmitCallback = this.transmitMessage, ReceiveCallback = this.receiveMessage }
 			};
 		}
 
@@ -147,9 +148,9 @@ namespace ReliableNetcode
 		/// <summary>
 		/// Send a message with the given QoS level
 		/// </summary>
-		public void SendMessage(byte[] buffer, int bufferLength, QosType qos)
+		public void SendMessage(byte[] buffer, int bufferPosition, int bufferLength, QosType qos)
 		{
-			messageChannels[(int)qos].SendMessage(buffer, bufferLength);
+			messageChannels[(int)qos].SendMessage(buffer, bufferPosition, bufferLength);
 		}
 
 		protected void receiveMessage(byte[] buffer, int length)
