@@ -19,6 +19,7 @@ namespace ReliableNetcode {
         private ReliablePacketController packetController;
 
         private struct Fragment {
+            public bool stale;
             public ushort sequence;
             public int fragmentIndex;
             public int lastFragmentIndex;
@@ -54,6 +55,7 @@ namespace ReliableNetcode {
                 int fragmentLength = Math.Min(mtu, bufferLength - fragmentIndex * mtu);
                 Array.Copy(buffer, fragmentIndex * mtu, fragmentBuffer, 1, fragmentLength);
                 packetController.SendPacket(fragmentBuffer, 0, fragmentLength + 1, (byte)ChannelID);
+                System.Diagnostics.Trace.WriteLine((fragmentIndex << 4) + ", " + lastFragmentIndex + ", " + BitConverter.ToString(fragmentBuffer, 0, fragmentLength + 1));
                 BufferPool.ReturnBuffer(fragmentBuffer);
             }
         }
@@ -64,6 +66,17 @@ namespace ReliableNetcode {
 
         protected void processPacket(ushort sequence, byte[] buffer, int length) {
             int i = Window(sequence);
+            if (fragments[i].stale) {
+                fragments[i].stale = true;
+            } else {
+                ushort forward = (ushort)(sequence - fragments[i].sequence);
+                ushort back = (ushort)(fragments[i].sequence - sequence);
+                if (forward >= back) {
+                    // this packet is older or was handled already
+                    return;
+                }
+            }
+
             fragments[i].sequence = sequence;
             byte firstByte = buffer[0];
             fragments[i].fragmentIndex = firstByte >> 4;
@@ -75,7 +88,9 @@ namespace ReliableNetcode {
 
             Array.Copy(buffer, 1, fragments[i].buffer, 0, length - 1);
             fragments[i].length = length - 1;
-            
+
+            System.Diagnostics.Trace.WriteLine((fragments[i].fragmentIndex << 4) + ", " + fragments[i].lastFragmentIndex + ", " + BitConverter.ToString(fragments[i].buffer, 0, length - 1));
+
             int fragmentStart = Window(i - fragments[i].fragmentIndex);
             int fragmentEnd = Window(fragmentStart + fragments[i].lastFragmentIndex);
 
