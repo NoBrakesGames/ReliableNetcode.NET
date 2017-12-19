@@ -51,8 +51,8 @@ namespace ReliableNetcode {
             for (int fragmentIndex = 0; fragmentIndex * mtu < bufferLength; ++fragmentIndex) {
                 var fragmentBuffer = BufferPool.GetBuffer(2048);
                 int fragmentLength = Math.Min(mtu, bufferLength - fragmentIndex * mtu);
-                Array.Copy(buffer, fragmentIndex * mtu, fragmentBuffer, 0, fragmentLength);
-                fragmentBuffer[fragmentLength] = (byte)((fragmentIndex << 4) | lastFragmentIndex);
+                Array.Copy(buffer, fragmentIndex * mtu, fragmentBuffer, 1, fragmentLength);
+                fragmentBuffer[0] = (byte)((fragmentIndex << 4) | lastFragmentIndex);
                 packetController.SendPacket(fragmentBuffer, fragmentLength + 1, (byte)ChannelID);
                 BufferPool.ReturnBuffer(fragmentBuffer);
             }
@@ -65,9 +65,9 @@ namespace ReliableNetcode {
         protected void processPacket(ushort sequence, byte[] buffer, int length) {
             int i = Window(sequence);
             fragments[i].sequence = sequence;
-            byte lastByte = buffer[length - 1];
-            fragments[i].fragmentIndex = lastByte >> 4;
-            fragments[i].lastFragmentIndex = lastByte & 0xff;
+            byte firstByte = buffer[0];
+            fragments[i].fragmentIndex = firstByte >> 4;
+            fragments[i].lastFragmentIndex = firstByte & 0xff;
 
             if (fragments[i].buffer == null) {
                 fragments[i].buffer = BufferPool.GetBuffer(2048);
