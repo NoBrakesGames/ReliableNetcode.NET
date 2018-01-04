@@ -192,7 +192,7 @@ namespace ReliableNetcode {
 
             // ensure size for header
             int varLength = getVariableLengthBytes((ushort)bufferLength);
-            packet.buffer.SetSize(bufferLength + 2 + varLength);
+            packet.buffer.SetSize(2 + varLength + bufferLength);
 
             using (var writer = ByteArrayReaderWriter.Get(packet.buffer.InternalBuffer)) {
                 writer.Write(sequence);
