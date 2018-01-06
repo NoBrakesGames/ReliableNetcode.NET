@@ -18,5 +18,10 @@ namespace ReliableNetcode
         public abstract void Update(double newTime);
         public abstract void ReceivePacket(byte[] buffer, int bufferLength);
         public abstract void SendMessage(byte[] buffer, int bufferPosition, int bufferLength);
+
+        public abstract float RTT { get; }
+        public abstract float PacketLoss { get; }
+        public abstract float SentBandwidthKBPS { get; }
+        public abstract float ReceivedBandwidthKBPS { get; }
     }
 }

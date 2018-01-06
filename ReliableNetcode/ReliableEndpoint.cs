@@ -51,38 +51,85 @@ namespace ReliableNetcode
 		/// <summary>
 		/// Approximate round-trip-time
 		/// </summary>
-		public float RTT => _reliableChannel.RTT;
+		public float RTT {
+            get {
+                float total = 0;
+                int count = 0;
+                for (int i = 0; i < messageChannels.Length; ++i) {
+                    if (!float.IsNaN(messageChannels[i].RTT) && !float.IsInfinity(messageChannels[i].RTT)) {
+                        total += messageChannels[i].RTT;
+                        ++count;
+                    }
+                }
+
+                return total / count;
+            }
+        }
 
 		/// <summary>
 		/// Approximate packet loss
 		/// </summary>
-		public float PacketLoss => _reliableChannel.PacketLoss;
+		public float PacketLoss {
+            get {
+                float total = 0;
+                int count = 0;
+                for (int i = 0; i < messageChannels.Length; ++i) {
+                    if (!float.IsNaN(messageChannels[i].PacketLoss) && !float.IsInfinity(messageChannels[i].PacketLoss)) {
+                        total += messageChannels[i].PacketLoss;
+                        ++count;
+                    }
+                }
 
-		/// <summary>
-		/// Approximate send bandwidth
-		/// </summary>
-		public float SentBandwidthKBPS => _reliableChannel.SentBandwidthKBPS;
+                return total / count;
+            }
+        }
 
-		/// <summary>
-		/// Approximate received bandwidth
-		/// </summary>
-		public float ReceivedBandwidthKBPS => _reliableChannel.ReceivedBandwidthKBPS;
+        /// <summary>
+        /// Approximate send bandwidth
+        /// </summary>
+        public float SentBandwidthKBPS {
+            get {
+                float total = 0;
+                int count = 0;
+                for (int i = 0; i < messageChannels.Length; ++i) {
+                    if (!float.IsNaN(messageChannels[i].SentBandwidthKBPS) && !float.IsInfinity(messageChannels[i].SentBandwidthKBPS)) {
+                        total += messageChannels[i].SentBandwidthKBPS;
+                        ++count;
+                    }
+                }
 
-		private MessageChannel[] messageChannels;
+                return total / count;
+            }
+        }
+
+        /// <summary>
+        /// Approximate received bandwidth
+        /// </summary>
+        public float ReceivedBandwidthKBPS {
+            get {
+                float total = 0;
+                int count = 0;
+                for (int i = 0; i < messageChannels.Length; ++i) {
+                    if (!float.IsNaN(messageChannels[i].ReceivedBandwidthKBPS) && !float.IsInfinity(messageChannels[i].ReceivedBandwidthKBPS)) {
+                        total += messageChannels[i].ReceivedBandwidthKBPS;
+                        ++count;
+                    }
+                }
+
+                return total / count;
+            }
+        }
+
+        private MessageChannel[] messageChannels;
 		private double time = 0.0;
-
-		// the reliable channel
-		private ReliableMessageChannel _reliableChannel;
-
+        
 		public ReliableEndpoint()
 		{
 			time = DateTime.Now.GetTotalSeconds();
-
-			_reliableChannel = new ReliableMessageChannel() { TransmitCallback = this.transmitMessage, ReceiveCallback = this.receiveMessage };
-
+            
 			messageChannels = new MessageChannel[]
 			{
-				_reliableChannel,
+                new ReliableMessageChannel() { TransmitCallback = this.transmitMessage, ReceiveCallback = this.receiveMessage },
 				new UnreliableMessageChannel() { TransmitCallback = this.transmitMessage, ReceiveCallback = this.receiveMessage },
 				new UnreliableOrderedMessageChannel() { TransmitCallback = this.transmitMessage, ReceiveCallback = this.receiveMessage },
 			};

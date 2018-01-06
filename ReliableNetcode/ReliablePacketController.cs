@@ -48,7 +48,7 @@ namespace ReliableNetcode
 
     internal class ReliablePacketController
     {
-        public ReliableConfig config;
+        public readonly ReliableConfig config;
 
         public float RTT
         {

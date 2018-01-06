@@ -15,6 +15,14 @@ namespace ReliableNetcode {
             }
         }
 
+        public override float RTT => packetController.RTT;
+
+        public override float PacketLoss => packetController.PacketLoss;
+
+        public override float SentBandwidthKBPS => packetController.SentBandwidthKBPS;
+
+        public override float ReceivedBandwidthKBPS => packetController.ReceivedBandwidthKBPS;
+
         private ReliableConfig config;
         private ReliablePacketController packetController;
 

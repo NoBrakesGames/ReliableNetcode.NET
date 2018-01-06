@@ -18,19 +18,15 @@ namespace ReliableNetcode {
             public List<ushort> MessageIds = new List<ushort>();
         }
 
-        public override int ChannelID {
-            get {
-                return (int)QosType.Reliable;
-            }
-        }
+        public override int ChannelID => (int)QosType.Reliable;
 
-        public float RTT => packetController.RTT;
+        public override float RTT => packetController.RTT;
 
-        public float PacketLoss => packetController.PacketLoss;
+        public override float PacketLoss => packetController.PacketLoss;
 
-        public float SentBandwidthKBPS => packetController.SentBandwidthKBPS;
+        public override float SentBandwidthKBPS => packetController.SentBandwidthKBPS;
 
-        public float ReceivedBandwidthKBPS => packetController.ReceivedBandwidthKBPS;
+        public override float ReceivedBandwidthKBPS => packetController.ReceivedBandwidthKBPS;
 
         private ReliableConfig config;
         private ReliablePacketController packetController;

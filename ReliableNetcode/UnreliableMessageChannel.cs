@@ -9,11 +9,15 @@ namespace ReliableNetcode {
     // an unreliable implementation of MessageChannel
     // does not make any guarantees about message reliability except for ignoring duplicate messages
     internal class UnreliableMessageChannel : MessageChannel {
-        public override int ChannelID {
-            get {
-                return (int)QosType.Unreliable;
-            }
-        }
+        public override int ChannelID => (int)QosType.Unreliable;
+
+        public override float RTT => packetController.RTT;
+
+        public override float PacketLoss => packetController.PacketLoss;
+
+        public override float SentBandwidthKBPS => packetController.SentBandwidthKBPS;
+
+        public override float ReceivedBandwidthKBPS => packetController.ReceivedBandwidthKBPS;
 
         private ReliableConfig config;
         private ReliablePacketController packetController;
