@@ -30,9 +30,9 @@ namespace ReliableNetcode
         {
             var config = new ReliableConfig();
             config.Name = "endpoint";
-            config.MaxPacketSize = 32 * 1024;
+            config.MaxPacketSize = 64 * 1024;
             config.FragmentThreshold = 1024;
-            config.MaxFragments = 32;
+            config.MaxFragments = 64;
             config.FragmentSize = 1024;
             config.SentPacketBufferSize = 256;
             config.ReceivedPacketBufferSize = 256;
