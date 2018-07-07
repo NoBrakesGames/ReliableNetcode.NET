@@ -441,6 +441,7 @@ namespace ReliableNetcode
                     reassemblyData.NumFragmentsReceived = 0;
                     reassemblyData.NumFragmentsTotal = numFragments;
                     reassemblyData.PacketBytes = 0;
+                    reassemblyData.PacketDataBuffer.SetSize(0);
                     Array.Clear(reassemblyData.FragmentReceived, 0, reassemblyData.FragmentReceived.Length);
                 }
 
