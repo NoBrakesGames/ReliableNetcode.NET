@@ -361,8 +361,8 @@ namespace ReliableNetcode
                     isStale = !receivedPackets.TestInsert(sequence);
 
                 if (!isStale && (prefixByte & 0x80) == 0) {
-                    if (packetHeaderBytes >= bufferLength)
-                        throw new FormatException("Buffer too small for packet data!");
+                    if (packetHeaderBytes > bufferLength)
+                        throw new FormatException($"Buffer too small for packet data! {packetHeaderBytes} packetHeaderBytes > {bufferLength} bufferLength");
 
                     ByteBuffer tempBuffer = ObjPool<ByteBuffer>.Get();
                     tempBuffer.SetSize(bufferLength - packetHeaderBytes);
