@@ -18,31 +18,36 @@ namespace UnitTestProject1
 		[TestMethod]
 		public void TestBasicSending()
 		{
+            var rand = new Random();
+
 			List<byte> sentPackets = new List<byte>();
 			List<byte> receivedPackets = new List<byte>();
 
 			ReliableEndpoint endpoint1 = new ReliableEndpoint();
 			endpoint1.ReceiveCallback = (buffer, size) =>
 			{
-				if (buffer[0] == 0)
-					receivedPackets.Add(buffer[1]);
+				for (int i = 0; i < size; ++i)
+					receivedPackets.Add(buffer[i]);
 			};
 			endpoint1.TransmitCallback = (buffer, size) =>
 			{
 				endpoint1.ReceivePacket(buffer, size);
 			};
 
-			for (int i = 0; i < 100; i++)
+			for (int i = 0; i < 1; i++)
 			{
-				sentPackets.Add((byte)i);
-				byte[] test = new byte[256];
-				test[0] = 0;
-				test[1] = (byte)i;
-				endpoint1.SendMessage(test, 0, 256, QosType.Reliable);
+                int count = rand.Next(1, 256);
+				byte[] test = new byte[count];
+                rand.NextBytes(test);
+                for (int j = 0; j < count; ++j) {
+                    sentPackets.Add(test[j]);
+                }
+
+                endpoint1.SendMessage(test, 0, count, QosType.Reliable);
 			}
 
 			int iterations = 0;
-			for (int i = 0; i < 5000; i++)
+			for (int i = 0; i < 100000; i++)
 			{
 				endpoint1.UpdateFastForward(1.0);
 				iterations++;
@@ -150,11 +155,10 @@ namespace UnitTestProject1
 				int droppedPackets = 0;
 
 				ReliableEndpoint endpoint1 = new ReliableEndpoint();
-				endpoint1.ReceiveCallback = (buffer, size) =>
-				{
-					if (buffer[0] == 0)
-						receivedPackets.Add(buffer[1]);
-				};
+				endpoint1.ReceiveCallback = (buffer, size) => {
+                    for (int i = 0; i < size; ++i)
+                        receivedPackets.Add(buffer[i]);
+                };
 				endpoint1.TransmitCallback = (buffer, size) =>
 				{
 					if (rand.Next(100) > 50)
@@ -163,15 +167,15 @@ namespace UnitTestProject1
 						droppedPackets++;
 				};
 
-				for (int i = 0; i < 100; i++)
-				{
-					sentPackets.Add((byte)i);
-					byte[] test = new byte[256];
-					test[0] = 0;
-					test[1] = (byte)i;
-					endpoint1.SendMessage(test, 0, 256, QosType.Reliable);
+				for (int i = 0; i < 100; i++) {
+                    int count = rand.Next(0, 256);
+                    byte[] test = new byte[count];
+                    rand.NextBytes(test);
+                    for (int j = 0; j < count; ++j) {
+                        sentPackets.Add(test[j]);
+                    }
 
-					endpoint1.UpdateFastForward(0.1);
+                    endpoint1.SendMessage(test, 0, count, QosType.Reliable);
 				}
 
 				int iterations = 0;

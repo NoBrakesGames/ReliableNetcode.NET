@@ -253,6 +253,10 @@ namespace ReliableNetcode
             if (length > config.MaxPacketSize)
                 throw new ArgumentOutOfRangeException("Packet is too large to send, max packet size is " + config.MaxPacketSize + " bytes");
 
+            if (length < 1) {
+                throw new ArgumentOutOfRangeException("Packet is too small; minimum packet size is 1 byte.");
+            }
+
             ushort sequence = this.sequence++;
             ushort ack;
             uint ackBits;
@@ -361,7 +365,7 @@ namespace ReliableNetcode
                     isStale = !receivedPackets.TestInsert(sequence);
 
                 if (!isStale && (prefixByte & 0x80) == 0) {
-                    if (packetHeaderBytes > bufferLength)
+                    if (packetHeaderBytes >= bufferLength)
                         throw new FormatException($"Buffer too small for packet data! {packetHeaderBytes} packetHeaderBytes > {bufferLength} bufferLength");
 
                     ByteBuffer tempBuffer = ObjPool<ByteBuffer>.Get();
