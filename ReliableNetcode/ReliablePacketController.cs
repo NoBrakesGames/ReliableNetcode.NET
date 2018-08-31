@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 
 using ReliableNetcode.Utils;
+using LZ4;
 
 namespace ReliableNetcode
 {
@@ -257,6 +258,16 @@ namespace ReliableNetcode
                 throw new ArgumentOutOfRangeException("Packet is too small; minimum packet size is 1 byte.");
             }
 
+            var compressedBuffer = LZ4Codec.Wrap(packetData, position, length);
+            bool compressed = false;
+            int bytesSaved = length - compressedBuffer.Length;
+            if (bytesSaved > 0) {
+                packetData = compressedBuffer;
+                position = 0;
+                length = compressedBuffer.Length;
+                compressed = true;
+            }
+
             ushort sequence = this.sequence++;
             ushort ack;
             uint ackBits;
@@ -273,7 +284,7 @@ namespace ReliableNetcode
                 // regular packet
 
                 byte[] transmitData = BufferPool.GetBuffer(2048);
-                int headerBytes = PacketIO.WritePacketHeader(transmitData, channelID, sequence, ack, ackBits);
+                int headerBytes = PacketIO.WritePacketHeader(transmitData, channelID, sequence, ack, ackBits, compressed);
                 int transmitBufferLength = length + headerBytes;
 
                 Buffer.BlockCopy(packetData, position, transmitData, headerBytes, length);
@@ -290,7 +301,7 @@ namespace ReliableNetcode
                 int packetHeaderBytes = 0;
 
                 try {
-                    packetHeaderBytes = PacketIO.WritePacketHeader(packetHeader, channelID, sequence, ack, ackBits);
+                    packetHeaderBytes = PacketIO.WritePacketHeader(packetHeader, channelID, sequence, ack, ackBits, compressed);
                 }
                 catch {
                     throw;
@@ -312,6 +323,7 @@ namespace ReliableNetcode
                         writer.Write(sequence);
                         writer.Write((byte)fragmentID);
                         writer.Write((byte)(numFragments - 1));
+                        writer.Write(compressed ? (byte)1 : (byte)0);
 
                         if (fragmentID == 0) {
                             writer.WriteBuffer(packetHeader, 0, packetHeaderBytes);
@@ -357,8 +369,9 @@ namespace ReliableNetcode
                 uint ackBits;
 
                 byte channelID;
+                bool compressed;
 
-                int packetHeaderBytes = PacketIO.ReadPacketHeader(packetData, 0, bufferLength, out channelID, out sequence, out ack, out ackBits);
+                int packetHeaderBytes = PacketIO.ReadPacketHeader(packetData, 0, bufferLength, out channelID, out sequence, out ack, out ackBits, out compressed);
 
                 bool isStale;
                 lock( receivedPackets )
@@ -369,8 +382,16 @@ namespace ReliableNetcode
                         throw new FormatException($"Buffer too small for packet data! {packetHeaderBytes} packetHeaderBytes > {bufferLength} bufferLength");
 
                     ByteBuffer tempBuffer = ObjPool<ByteBuffer>.Get();
-                    tempBuffer.SetSize(bufferLength - packetHeaderBytes);
-                    tempBuffer.BufferCopy(packetData, packetHeaderBytes, 0, tempBuffer.Length);
+
+                    if (compressed) {
+                        var decompressedBytes = LZ4Codec.Unwrap(packetData, packetHeaderBytes);
+                        tempBuffer.SetSize(decompressedBytes.Length);
+                        tempBuffer.BufferCopy(decompressedBytes, 0, 0, decompressedBytes.Length);
+                        bufferLength = decompressedBytes.Length + packetHeaderBytes;
+                    } else {
+                        tempBuffer.SetSize(bufferLength - packetHeaderBytes);
+                        tempBuffer.BufferCopy(packetData, packetHeaderBytes, 0, tempBuffer.Length);
+                    }
 
                     // process packet
                     config.ProcessPacketCallback(sequence, tempBuffer.InternalBuffer, tempBuffer.Length);
@@ -383,7 +404,7 @@ namespace ReliableNetcode
                             throw new InvalidOperationException("Failed to insert received packet!");
 
                         receivedPacketData.time = this.time;
-                        receivedPacketData.packetBytes = (uint)(config.PacketHeaderSize + bufferLength);
+                        receivedPacketData.packetBytes = (uint)(bufferLength);
                     }
 
                     ObjPool<ByteBuffer>.Return(tempBuffer);
@@ -428,8 +449,9 @@ namespace ReliableNetcode
 
                 byte fragmentChannelID;
 
+                bool compressed;
                 int fragmentHeaderBytes = PacketIO.ReadFragmentHeader(packetData, 0, bufferLength, config.MaxFragments, config.FragmentSize,
-                    out fragmentID, out numFragments, out fragmentBytes, out sequence, out ack, out ackBits, out fragmentChannelID);
+                    out fragmentID, out numFragments, out fragmentBytes, out sequence, out ack, out ackBits, out fragmentChannelID, out compressed);
 
                 FragmentReassemblyData reassemblyData = fragmentReassembly.Find(sequence);
                 if (reassemblyData == null) {
@@ -461,7 +483,7 @@ namespace ReliableNetcode
                 byte[] tempFragmentData = BufferPool.GetBuffer(2048);
                 Buffer.BlockCopy(packetData, fragmentHeaderBytes, tempFragmentData, 0, bufferLength - fragmentHeaderBytes);
                 
-                reassemblyData.StoreFragmentData(fragmentChannelID, sequence, ack, ackBits, fragmentID, config.FragmentSize, tempFragmentData, bufferLength - fragmentHeaderBytes);
+                reassemblyData.StoreFragmentData(fragmentChannelID, sequence, ack, ackBits, fragmentID, config.FragmentSize, tempFragmentData, bufferLength - fragmentHeaderBytes, compressed);
                 BufferPool.ReturnBuffer(tempFragmentData);
 
                 if (reassemblyData.NumFragmentsReceived == reassemblyData.NumFragmentsTotal) {

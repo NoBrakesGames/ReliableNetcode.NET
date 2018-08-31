@@ -32,13 +32,13 @@ namespace ReliableNetcode
         public int HeaderOffset;
         public bool[] FragmentReceived = new bool[256];
 
-        public void StoreFragmentData(byte channelID, ushort sequence, ushort ack, uint ackBits, int fragmentID, int fragmentSize, byte[] fragmentData, int fragmentBytes)
+        public void StoreFragmentData(byte channelID, ushort sequence, ushort ack, uint ackBits, int fragmentID, int fragmentSize, byte[] fragmentData, int fragmentBytes, bool compressed)
         {
             int copyOffset = 0;
 
             if (fragmentID == 0) {
                 byte[] packetHeader = BufferPool.GetBuffer(Defines.MAX_PACKET_HEADER_BYTES);
-                int headerBytes = PacketIO.WritePacketHeader(packetHeader, channelID, sequence, ack, ackBits);
+                int headerBytes = PacketIO.WritePacketHeader(packetHeader, channelID, sequence, ack, ackBits, compressed);
                 this.HeaderOffset = Defines.MAX_PACKET_HEADER_BYTES - headerBytes;
 
                 if (this.PacketDataBuffer.Length < (Defines.MAX_PACKET_HEADER_BYTES + fragmentSize))

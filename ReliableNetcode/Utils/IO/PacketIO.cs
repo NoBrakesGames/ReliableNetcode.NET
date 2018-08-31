@@ -18,7 +18,7 @@ namespace ReliableNetcode.Utils
 			return SequenceGreaterThan(s2, s1);
 		}
 
-		public static int ReadPacketHeader(byte[] packetBuffer, int offset, int bufferLength, out byte channelID, out ushort sequence, out ushort ack, out uint ackBits)
+		public static int ReadPacketHeader(byte[] packetBuffer, int offset, int bufferLength, out byte channelID, out ushort sequence, out ushort ack, out uint ackBits, out bool compressed)
 		{
 			if (bufferLength < 4)
 				throw new FormatException("Buffer too small for packet header");
@@ -99,12 +99,14 @@ namespace ReliableNetcode.Utils
 					ackBits |= (uint)(reader.ReadByte() << 24);
 				}
 
-				return (int)reader.ReadPosition - offset;
+                compressed = (reader.ReadByte() != 0);
+
+                return (int)reader.ReadPosition - offset;
 			}
 		}
 
 		public static int ReadFragmentHeader(byte[] packetBuffer, int offset, int bufferLength, int maxFragments, int fragmentSize, out int fragmentID, out int numFragments, out int fragmentBytes,
-			out ushort sequence, out ushort ack, out uint ackBits, out byte channelID)
+			out ushort sequence, out ushort ack, out uint ackBits, out byte channelID, out bool compressed)
 		{
 			if (bufferLength < Defines.FRAGMENT_HEADER_BYTES)
 				throw new FormatException("Buffer too small for packet header");
@@ -126,13 +128,15 @@ namespace ReliableNetcode.Utils
 				fragmentID = reader.ReadByte();
 				numFragments = reader.ReadByte() + 1;
 
+                compressed = (reader.ReadByte() != 0);
+
 				if (numFragments > maxFragments)
 					throw new FormatException("Packet header indicates fragments outside of max range");
 
 				if (fragmentID >= numFragments)
 					throw new FormatException("Packet header indicates fragment ID outside of fragment count");
 
-				fragmentBytes = bufferLength - Defines.FRAGMENT_HEADER_BYTES;
+                fragmentBytes = bufferLength - Defines.FRAGMENT_HEADER_BYTES;
 
 				ushort packetSequence = 0;
 				ushort packetAck = 0;
@@ -142,7 +146,7 @@ namespace ReliableNetcode.Utils
                 
 				if (fragmentID == 0)
 				{
-					int packetHeaderBytes = ReadPacketHeader(packetBuffer, Defines.FRAGMENT_HEADER_BYTES, bufferLength, out packetChannelID, out packetSequence, out packetAck, out packetAckBits);
+					int packetHeaderBytes = ReadPacketHeader(packetBuffer, Defines.FRAGMENT_HEADER_BYTES, bufferLength, out packetChannelID, out packetSequence, out packetAck, out packetAckBits, out compressed);
 					if (packetSequence != sequence)
 						throw new FormatException("Bad packet sequence in fragment");
 
@@ -201,7 +205,7 @@ namespace ReliableNetcode.Utils
 			}
 		}
 
-		public static int WritePacketHeader(byte[] packetBuffer, byte channelID, ushort sequence, ushort ack, uint ackBits)
+		public static int WritePacketHeader(byte[] packetBuffer, byte channelID, ushort sequence, ushort ack, uint ackBits, bool compressed)
 		{
 			using (var writer = ByteArrayReaderWriter.Get(packetBuffer))
 			{
@@ -225,6 +229,8 @@ namespace ReliableNetcode.Utils
                 if (sequenceDiff <= 255)
                     prefixByte |= (1 << 5);
 
+                byte compressedByte = compressed ? (byte)1 : (byte)0;
+
                 writer.Write(prefixByte);
                 writer.Write(channelID);
                 writer.Write(sequence);
@@ -245,6 +251,8 @@ namespace ReliableNetcode.Utils
 
                 if ((ackBits & 0xFF000000) != 0xFF000000)
                     writer.Write((byte)((ackBits & 0xFF000000) >> 24));
+
+                writer.Write(compressedByte);
 
                 return (int)writer.WritePosition;
 			}
